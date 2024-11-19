@@ -1,44 +1,42 @@
-A template Rust project with fully functional and no-frills Nix support, as well as builtin VSCode configuration to get IDE experience without any manual setup (just [install direnv](https://nixos.asia/en/direnv), open in VSCode and accept the suggestions). It uses [crane](https://crane.dev/), via [rust-flake](https://github.com/juspay/rust-flake).
+# Rusty Power Meter
+A little Rust binary which reads out power metrics over SML over USB and stores it into a SQLite database.<br>
+The binary also hosts a REST-API on Port 3000 which allows reading out the live metrics and querying stored metrics using SQL statements.
 
-> [!NOTE]
-> If you are looking for the original template based on [this blog post](https://srid.ca/rust-nix)'s use of `crate2nix`, browse from [this tag](https://github.com/srid/power-meter/tree/crate2nix). The evolution of this template can be gleaned from [releases](https://github.com/srid/power-meter/releases).
+### Project Status
+I developed this project over just two weekends in March 2024 and it is not finished nor maintained.
+It still runs on my Raspberry Pi after 4+ months and no restarts though, so I think it is useful enough to be shared.
 
-## Usage
-
-You can use [omnix](https://omnix.page/om/init.html)[^omnix] to initialize this template:
-```
-nix --accept-flake-config run github:juspay/omnix -- init github:srid/power-meter -o ~/my-rust-project
-```
-
-[^omnix]: If initializing manually, make sure to:
-    - Change `name` in Cargo.toml.
-    - Run `cargo generate-lockfile` in the nix shelld
-
-## Adapting this template
-
-- There are two CI workflows, and one of them uses Nix which is slower (unless you configure a cache) than the other one based on rustup. Pick one or the other depending on your trade-offs.
-
-## Development (Flakes)
-
-This repo uses [Flakes](https://nixos.asia/en/flakes) from the get-go.
-
+## Quick Start
+1. Place the binary on a device which is connected to a USB IR reader which reads the power meter.
+2. Check the device path of the USB IR reader (e.g. /dev/ttyUSB0).
 ```bash
-# Dev shell
-nix develop
-
-# or run via cargo
-nix develop -c cargo run
-
-# build
-nix build
+./rusty-power-meter list-ports
 ```
+3. Start the binary with the device path.
+```bash
+./rusty-power-meter start --path /dev/ttyUSB0
+```
+4. Enjoy
 
-We also provide a [`justfile`](https://just.systems/) for Makefile'esque commands to be run inside of the devShell.
+### Server
+The REST-API is hosted on Port 3000. The following endpoints are available:
+- GET / - Shows status of the server
+- GET /now - Current metrics
+- GET /api/now - JSON formatted metrics
+- POST /api/query - Query metrics using an SQL statement in the body. (readonly)
 
-## Discussion
+### Database
+Available columns:
+- MeterTime
+- Timestamp
+- MeterReading
+- LineOne
+- LineTwo
+- LineThree
 
-- [Zulip](https://nixos.zulipchat.com/#narrow/stream/413950-nix)
-
-## See Also
-
-- [nixos.wiki: Packaging Rust projects with nix](https://nixos.wiki/wiki/Rust#Packaging_Rust_projects_with_nix)
+## Build
+1. Setup cross-rs: https://github.com/cross-rs/cross/blob/main/docs/getting-started.md
+2. Compile:
+```bash
+cross build --target aarch64-unknown-linux-musl --release
+```
