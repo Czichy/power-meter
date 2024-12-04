@@ -67,7 +67,7 @@
 
         ./flake-parts/bomper.nix
         ./flake-parts/shells.nix
-        ./flake-parts/ci.nix
+        # ./flake-parts/ci.nix
       ];
     };
 }

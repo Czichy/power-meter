@@ -10,10 +10,6 @@
   }:
     with inputs; let
       manifest = (pkgs.lib.importTOML ../Cargo.toml).package;
-      # rustToolchain = fenix.packages.${system}.fromToolchainFile {
-      #   file = ../rust-toolchain.toml;
-      #   sha256 = "sha256-pZJWdNhvEsGbBM5yMD3xGi5IaGb01eyRvhCqUVAtFU8=";
-      # };
       pkgs = import nixpkgs {
         inherit system;
         overlays = [
@@ -43,8 +39,7 @@
           "taplo.toml"
           "rustfmt.toml"
           "rust-toolchain.toml"
-          "crates/api"
-          "crates/flex"
+          "src"
         ];
       };
 
@@ -56,12 +51,13 @@
         nativeBuildInputs = with pkgs; [
           openssl
           pkg-config
-          # udev
+          udev
         ];
         buildInputs = with pkgs; [
           openssl.dev
           openssl
           pkg-config
+          udev
         ];
         LD_LIBRARY_PATH = lib.makeLibraryPath [pkgs.openssl];
         # Needed to get openssl-sys to use pkg-config.
@@ -83,7 +79,7 @@
           root = ../.;
           include =
             [
-              "crates"
+              "src"
               "Cargo.toml"
               "Cargo.lock"
             ]
@@ -92,31 +88,18 @@
 
       cargoArtifacts = craneLib.buildDepsOnly args;
 
-      api = craneLib.buildPackage (individualCrateArgs
+      power-meter = craneLib.buildPackage (individualCrateArgs
         // {
           pname = manifest.name;
           version = manifest.version;
-          cargoLock.lockFile = ./Cargo.lock;
-          # cargoExtraArgs = "-p ${pname}";
-          src = fileSetForCrate [
-            "crates/api/src"
-            "crates/api/Cargo.toml"
-          ];
-        });
-
-      flex = craneLib.buildPackage (individualCrateArgs
-        // rec {
-          pname = "ibkr-rust-flex";
-          cargoExtraArgs = "--bin ${pname}";
-          src = fileSetForCrate [
-            "crates/flex/src"
-            "crates/flex/Cargo.toml"
-          ];
+          # cargoLock.lockFile = ./Cargo.lock;
+          src =
+            fileSetForCrate [
+            ];
         });
     in {
       checks = {
-        inherit seeking-edge;
-        # inherit app api server kickbase assets kickbase-api-doc;
+        inherit power-meter;
         inherit (self.packages.${system}) services;
 
         clippy = craneLib.cargoClippy (args
@@ -156,9 +139,9 @@
       };
 
       packages = {
-        inherit flex api;
+        inherit power-meter;
         inherit (self.checks.${system}) coverage;
-        default = self.packages.${system}.flex;
+        default = self.packages.${system}.power-meter;
       };
       legacyPackages = {
         cargoExtraPackages = args.nativeBuildInputs;
@@ -166,7 +149,7 @@
 
       apps = {
         default = {
-          program = self.packages.${system}.flex;
+          program = self.packages.${system}.power-meter;
         };
       };
 

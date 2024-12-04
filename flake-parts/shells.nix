@@ -49,7 +49,7 @@
     in {
       devShells = {
         default = pkgs.mkShell {
-          name = "Seeking-Edge-shell";
+          name = "Power-Meter-shell";
           RUST_SRC_PATH = "${self'.packages.rust-toolchain}/lib/rustlib/src/rust/src";
           AMD_VULKAN_ICD = "RADV";
 
@@ -72,10 +72,10 @@
             # zellij session
             alias zj="zellij --layout dev-layout.kdl"
 
-            SESSION="seeking-edge-dev"
+            SESSION="power-meter-edge-dev"
             ZJ_SESSIONS=$(zellij list-sessions -n | rg 'seeking-edge-dev' ) #$SESSION )
 
-             if [[ $ZJ_SESSIONS == *"seeking-edge-dev"* ]]; then
+             if [[ $ZJ_SESSIONS == *"power-meter-dev"* ]]; then
                # exec zellij attach seeking-edge-dev options --default-layout ./dev-layout.kdl
              else
                # exec zellij --session seeking-edge-dev --layout ./dev-layout.kdl
