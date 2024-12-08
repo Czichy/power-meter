@@ -67,6 +67,8 @@ impl MeterReading {
                 },
             };
 
+            println!("Obis Code \"{:?}\"", obis_code);
+
             let unit = entry.unit.and_then(Unit::from_u8);
 
             match obis_code {
