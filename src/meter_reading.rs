@@ -73,9 +73,9 @@ impl MeterReading {
 
             match obis_code {
                 OBIS_TOTAL_COUNT => {
-                    let Value::U64(value) = entry.value else {
+                    let Value::U32(value) = entry.value else {
                         // discard non-64bit integer values
-                        println!("Non 64bit integer: {:?}", entry.value);
+                        println!("Non 32bit integer: {:?}", entry.value);
                         continue;
                     };
 
@@ -95,8 +95,8 @@ impl MeterReading {
                     }
                 },
                 OBIS_LINE_ONE => {
-                    let Value::I32(value) = entry.value else {
-                        println!("Non 32bit integer: {:?}", entry.value);
+                    let Value::I16(value) = entry.value else {
+                        println!("Non 16bit integer: {:?}", entry.value);
                         continue;
                     };
 
@@ -104,8 +104,8 @@ impl MeterReading {
                     meter_values.line_one_unit = unit;
                 },
                 OBIS_LINE_TWO => {
-                    let Value::I32(value) = entry.value else {
-                        println!("Non 32bit integer: {:?}", entry.value);
+                    let Value::I16(value) = entry.value else {
+                        println!("Non 16bit integer: {:?}", entry.value);
                         continue;
                     };
 
@@ -113,8 +113,8 @@ impl MeterReading {
                     meter_values.line_two_unit = unit;
                 },
                 OBIS_LINE_THREE => {
-                    let Value::I32(value) = entry.value else {
-                        println!("Non 32bit integer: {:?}", entry.value);
+                    let Value::I16(value) = entry.value else {
+                        println!("Non 16bit integer: {:?}", entry.value);
                         continue;
                     };
 
