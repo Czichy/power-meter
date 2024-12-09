@@ -97,11 +97,11 @@ impl Database {
                 meter_time:         Some(row.read::<i64, _>(0) as u32),
                 meter_reading:      Some(row.read::<f64, _>(0)),
                 meter_reading_unit: Some(Unit::WattHour),
-                line_one:           Some(row.read::<i64, _>(1) as i32),
+                line_one:           Some((row.read::<i64, _>(1) as i32).try_into().unwrap()),
                 line_one_unit:      Some(Unit::Watt),
-                line_two:           Some(row.read::<i64, _>(2) as i32),
+                line_two:           Some((row.read::<i64, _>(2) as i32).try_into().unwrap()),
                 line_two_unit:      Some(Unit::Watt),
-                line_three:         Some(row.read::<i64, _>(3) as i32),
+                line_three:         Some((row.read::<i64, _>(3) as i32).try_into().unwrap()),
                 line_three_unit:    Some(Unit::Watt),
             })
         }))

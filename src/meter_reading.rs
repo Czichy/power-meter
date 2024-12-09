@@ -14,13 +14,13 @@ pub struct MeterReading {
     pub meter_reading:      Option<f64>,
     pub meter_reading_unit: Option<Unit>,
 
-    pub line_one:      Option<i32>, // watts
+    pub line_one:      Option<i16>, // watts
     pub line_one_unit: Option<Unit>,
 
-    pub line_two:      Option<i32>, // watts
+    pub line_two:      Option<i16>, // watts
     pub line_two_unit: Option<Unit>,
 
-    pub line_three:      Option<i32>, // watts
+    pub line_three:      Option<i16>, // watts
     pub line_three_unit: Option<Unit>,
 }
 
