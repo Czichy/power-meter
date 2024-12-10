@@ -1,4 +1,5 @@
 use std::fmt::Display;
+
 use sml_rs::parser::OctetStr;
 
 /// A code as defined in [OBIS][obis]
@@ -22,20 +23,14 @@ impl Display for ObisCode {
     }
 }
 
-impl Default for ObisCode {
-    fn default() -> Self {
-        Self { inner: [0; 5] }
-    }
-}
-
 impl ObisCode {
     /// Parses an OBIS code from a string such as `&[1, 2, 3, 4, 5, 255]`.
     ///
     /// Panics when the input doesn't contain a valid octet string.
     ///
     /// This function is designed to be used in constant contexts, where it will
-    /// fail to compile if the provided input isn't valid. For parsing OBIS codes
-    /// at runtime, see `ObisCode::try_from`.
+    /// fail to compile if the provided input isn't valid. For parsing OBIS
+    /// codes at runtime, see `ObisCode::try_from`.
     ///
     /// # Examples
     ///
@@ -55,8 +50,8 @@ impl ObisCode {
     /// Panics when the input doesn't contain a valid string.
     ///
     /// This function is designed to be used in constant contexts, where it will
-    /// fail to compile if the provided input isn't valid. For parsing OBIS codes
-    /// at runtime, see `ObisCode::try_from`.
+    /// fail to compile if the provided input isn't valid. For parsing OBIS
+    /// codes at runtime, see `ObisCode::try_from`.
     ///
     /// # Examples
     ///
@@ -65,17 +60,15 @@ impl ObisCode {
     /// const OBIS_CODE: ObisCode = ObisCode::from_str("1-2:3.4.5");
     /// assert_eq!(&format!("{OBIS_CODE}"), "1-2:3.4.5");
     /// ```
-    pub const fn from_str(s: &'static str) -> Self {
-        match Self::try_from_str(s) {
-            Ok(x) => x,
-            Err(e) => e.panic(),
-        }
-    }
+    // pub const fn from_str(s: &'static str) -> Self {
+    //     match Self::try_from_str(s) {
+    //         Ok(x) => x,
+    //         Err(e) => e.panic(),
+    //     }
+    // }
 
     /// Views this Obis code as a slice of bytes.
-    pub const fn as_bytes(&self) -> &[u8; 5] {
-        &self.inner
-    }
+    // pub const fn as_bytes(&self) -> &[u8; 5] { &self.inner }
 
     const fn try_from_str(s: &str) -> Result<Self, ObisParseError> {
         const SEPARATORS: &[u8; 4] = b"-:..";
@@ -94,13 +87,13 @@ impl ObisCode {
                         return Err(ObisParseError::Overflow);
                     };
                     vals[val_idx] = val;
-                }
+                },
                 b if val_idx < SEPARATORS.len() && SEPARATORS[val_idx] == b => {
                     val_idx += 1;
-                }
+                },
                 _ => {
                     return Err(ObisParseError::UnexpectedSeparator);
-                }
+                },
             }
             idx += 1;
         }
@@ -135,7 +128,7 @@ pub enum ObisParseError {
     UnexpectedSeparator,
     /// Provided octet string has invalid length
     InvalidLength,
-    /// Provided octet string's last byte doesn't equal 255
+    // / Provided octet string's last byte doesn't equal 255
     InvalidLastByte,
 }
 
@@ -147,7 +140,7 @@ impl ObisParseError {
             ObisParseError::InvalidLength => panic!("Invalid input length. Expected 6 bytes."),
             ObisParseError::InvalidLastByte => {
                 panic!("Invalid input. Expected the last byte to contain the value 255.")
-            }
+            },
         }
     }
 }
@@ -155,9 +148,7 @@ impl ObisParseError {
 impl core::convert::TryFrom<&str> for ObisCode {
     type Error = ObisParseError;
 
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        Self::try_from_str(value)
-    }
+    fn try_from(value: &str) -> Result<Self, Self::Error> { Self::try_from_str(value) }
 }
 
 impl core::convert::TryFrom<OctetStr<'_>> for ObisCode {

@@ -1,4 +1,4 @@
 pub mod root_command;
-mod database;
+// mod database;
 mod ports;
 mod start;

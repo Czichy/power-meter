@@ -1,26 +1,25 @@
-use std::time::Duration;
-use serialport::{Parity, StopBits};
-use crate::database::Database;
-use crate::meter_reading::MeterReading;
-use std::io::{Read};
-use std::sync::{Arc};
+use std::{io::Read, sync::Arc, time::Duration};
+
 use anyhow::Error;
 use crossbeam_utils::atomic::AtomicCell;
+use serialport::{Parity, StopBits};
 
-pub struct CoreLoop<'a> { 
-    port: String,
-    database: &'a Database,
+use crate::meter_reading::MeterReading;
+
+pub struct CoreLoop {
+    port:           String,
+    // database:       &'a Database,
     latest_reading: Arc<AtomicCell<Option<MeterReading>>>,
-    verbose: bool
+    verbose:        bool,
 }
 
-impl<'a> CoreLoop<'a> {
-    pub fn new(port: String, verbose: bool, database: &'a Database) -> Self {
+impl CoreLoop {
+    pub fn new(port: String, verbose: bool) -> Self {
         Self {
             port,
-            database,
+            // database,
             latest_reading: Arc::new(AtomicCell::new(None)),
-            verbose
+            verbose,
         }
     }
 
@@ -32,17 +31,16 @@ impl<'a> CoreLoop<'a> {
             .open()
             .expect("Failed to open port");
 
-        
         // let mut current_ball_position = 1;
         let mut decoder = sml_rs::transport::Decoder::<Vec<u8>>::new();
-        
+
         println!("Now listening for SML messages on {}...", self.port);
 
         for res in port.bytes() {
             let byte = res?;
 
             match decoder.push_byte(byte) {
-                Ok(None) => {}
+                Ok(None) => {},
                 Ok(Some(decoded_bytes)) => {
                     let result = sml_rs::parser::complete::parse(decoded_bytes);
                     let Ok(sml_file) = result else {
@@ -56,29 +54,24 @@ impl<'a> CoreLoop<'a> {
                     let Ok(reading) = reading else {
                         continue;
                     };
-
-                    // println!("{}", reading.display_compact());
                     if self.verbose {
                         println!("{}", reading.display_compact());
                     }
-                    
-                    self.database.insert_reading(&reading)?;
+
+                    // self.database.insert_reading(&reading)?;
                     self.latest_reading.store(Some(reading));
-                    
-                    
-                    // print_progress_bar(&mut current_ball_position);
-                }
+                },
                 Err(e) => {
                     if self.verbose {
                         println!("Err({:?})", e);
                     }
-                }
+                },
             }
         }
-        
+
         Ok(())
     }
-    
+
     pub fn get_latest_reading_cell(&self) -> Arc<AtomicCell<Option<MeterReading>>> {
         self.latest_reading.clone()
     }

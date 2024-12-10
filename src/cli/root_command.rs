@@ -1,5 +1,6 @@
 use clap_derive::{Parser, Subcommand};
-use crate::cli::database::DatabaseCommand;
+
+// use crate::cli::database::DatabaseCommand;
 use crate::cli::ports::ListPortsCommand;
 use crate::cli::start::StartCommand;
 
@@ -13,7 +14,7 @@ pub struct RootCommand {
 
 #[derive(Clone, Subcommand)]
 pub enum Commands {
-    Database(DatabaseCommand),
+    // Database(DatabaseCommand),
     ListPorts(ListPortsCommand),
     Start(StartCommand),
 }
@@ -21,7 +22,7 @@ pub enum Commands {
 impl RootCommand {
     pub fn run(self) -> Result<(), anyhow::Error> {
         match self.command {
-            Commands::Database(command) => command.run(),
+            // Commands::Database(command) => command.run(),
             Commands::ListPorts(command) => command.run(),
             Commands::Start(command) => command.run(),
         }

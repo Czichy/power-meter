@@ -61,7 +61,7 @@ impl Database {
         )?;
         statement.bind((1, reading.meter_time.map(|x| x as i64)))?;
         statement.bind((2, timestamp))?;
-        statement.bind((3, reading.meter_reading))?;
+        statement.bind((3, reading.total_energy_inbound))?;
         statement.bind((4, reading.line_one.map(|x| x as i64)))?;
         statement.bind((5, reading.line_two.map(|x| x as i64)))?;
         statement.bind((6, reading.line_three.map(|x| x as i64)))?;
@@ -94,15 +94,25 @@ impl Database {
             };
 
             Ok(MeterReading {
-                meter_time:         Some(row.read::<i64, _>(0) as u32),
-                meter_reading:      Some(row.read::<f64, _>(0)),
-                meter_reading_unit: Some(Unit::WattHour),
-                line_one:           Some((row.read::<i64, _>(1) as i32).try_into().unwrap()),
-                line_one_unit:      Some(Unit::Watt),
-                line_two:           Some((row.read::<i64, _>(2) as i32).try_into().unwrap()),
-                line_two_unit:      Some(Unit::Watt),
-                line_three:         Some((row.read::<i64, _>(3) as i32).try_into().unwrap()),
-                line_three_unit:    Some(Unit::Watt),
+                meter_time:                 Some(row.read::<i64, _>(0) as u32),
+                total_energy_inbound:       Some(row.read::<f64, _>(0)),
+                total_energy_inbound_unit:  Some(Unit::WattHour),
+                total_energy_outbound:      Some(row.read::<f64, _>(0)),
+                total_energy_outbound_unit: Some(Unit::WattHour),
+                current_net_power:          Some(row.read::<f64, _>(0)),
+                current_net_power_unit:     Some(Unit::WattHour),
+                line_one:                   Some(
+                    (row.read::<i64, _>(1) as i32).try_into().unwrap(),
+                ),
+                line_one_unit:              Some(Unit::Watt),
+                line_two:                   Some(
+                    (row.read::<i64, _>(2) as i32).try_into().unwrap(),
+                ),
+                line_two_unit:              Some(Unit::Watt),
+                line_three:                 Some(
+                    (row.read::<i64, _>(3) as i32).try_into().unwrap(),
+                ),
+                line_three_unit:            Some(Unit::Watt),
             })
         }))
     }
