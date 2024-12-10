@@ -19,9 +19,8 @@ pub struct MeterReading {
 
     pub current_net_power:      Option<f64>,
     pub current_net_power_unit: Option<Unit>,
-
-    pub line_one:      Option<i16>, // watts
-    pub line_one_unit: Option<Unit>,
+    pub line_one:               Option<i16>, // watts
+    pub line_one_unit:          Option<Unit>,
 
     pub line_two:      Option<i16>, // watts
     pub line_two_unit: Option<Unit>,
@@ -39,7 +38,7 @@ const OBIS_LINE_THREE: ObisCode = ObisCode::from_octet_str(&[1, 0, 76, 7, 0, 255
 
 impl MeterReading {
     pub fn parse(sml_file: File) -> Result<Self, Error> {
-        println!("SML file \"{:?}\"", sml_file);
+        println!("SML file \"{:#?}\"", sml_file);
         // The payload must contain 3 messages. An open response, a get list response
         // and a close response.
         if sml_file.messages.len() != 3 {
