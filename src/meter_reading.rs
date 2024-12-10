@@ -19,13 +19,14 @@ pub struct MeterReading {
 
     pub current_net_power:      Option<f64>,
     pub current_net_power_unit: Option<Unit>,
-    pub line_one:               Option<i16>, // watts
-    pub line_one_unit:          Option<Unit>,
 
-    pub line_two:      Option<i16>, // watts
+    pub line_one:      Option<i16>, // watts
+    pub line_one_unit: Option<Unit>,
+
+    pub line_two:      Option<i8>, // watts
     pub line_two_unit: Option<Unit>,
 
-    pub line_three:      Option<i16>, // watts
+    pub line_three:      Option<i8>, // watts
     pub line_three_unit: Option<Unit>,
 }
 
@@ -125,9 +126,9 @@ impl MeterReading {
                     }
                 },
                 OBIS_CURRENT_NET_POWER => {
-                    let Value::U32(value) = entry.value else {
+                    let Value::I16(value) = entry.value else {
                         // discard non-64bit integer values
-                        println!("Non 32bit integer: {:?}", entry.value);
+                        println!("Non 16bit integer: {:?}", entry.value);
                         continue;
                     };
 
@@ -150,8 +151,8 @@ impl MeterReading {
                     meter_values.line_one_unit = unit;
                 },
                 OBIS_LINE_TWO => {
-                    let Value::I16(value) = entry.value else {
-                        println!("Non 16bit integer: {:?}", entry.value);
+                    let Value::I8(value) = entry.value else {
+                        println!("Non 8bit integer: {:?}", entry.value);
                         continue;
                     };
 
@@ -159,8 +160,8 @@ impl MeterReading {
                     meter_values.line_two_unit = unit;
                 },
                 OBIS_LINE_THREE => {
-                    let Value::I16(value) = entry.value else {
-                        println!("Non 16bit integer: {:?}", entry.value);
+                    let Value::I8(value) = entry.value else {
+                        println!("Non 8bit integer: {:?}", entry.value);
                         continue;
                     };
 
