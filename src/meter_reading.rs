@@ -26,7 +26,7 @@ pub struct MeterReading {
     pub line_two:      Option<i8>, // watts
     pub line_two_unit: Option<Unit>,
 
-    pub line_three:      Option<i8>, // watts
+    pub line_three:      Option<i16>, // watts
     pub line_three_unit: Option<Unit>,
 }
 
@@ -160,8 +160,8 @@ impl MeterReading {
                     meter_values.line_two_unit = unit;
                 },
                 OBIS_LINE_THREE => {
-                    let Value::I8(value) = entry.value else {
-                        println!("Non 8bit integer: {:?}", entry.value);
+                    let Value::I16(value) = entry.value else {
+                        println!("Non 16bit integer: {:?}", entry.value);
                         continue;
                     };
 

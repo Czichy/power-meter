@@ -321,7 +321,7 @@ pub async fn handler(latest_reading_cell: Arc<AtomicCell<Option<MeterReading>>>)
 
     Response::builder()
         .status(status)
-        .header(header::CONTENT_TYPE, "text/plain")
+        .header(header::CONTENT_TYPE, "text/html")
         .body(body.into())
         .unwrap()
 }
