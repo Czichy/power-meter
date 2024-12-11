@@ -26,10 +26,13 @@ pub async fn handler(latest_reading_cell: Arc<AtomicCell<Option<MeterReading>>>)
 		<meta name="KeyWords" lang="de" content="SML, Smartmeter, FTDI">
 		<title>SML Testseite</title>
 		<link href="css/style2.css" rel="stylesheet" type="text/css">
-		<script type="text/javascript" src="js/highcharts.js"></script>
-		<script type="text/javascript" src="js/highcharts-more.js"></script>
-		<script type="text/javascript" src="js/solid-gauge.js"></script>
-		<script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
+		<script src="https://code.highcharts.com/highcharts.js"></script>
+		<script src="https://code.highcharts.com/highcharts-more.js"></script>
+		<script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
+		<script src="https://code.highcharts.com/modules/exporting.js"></script>
+		<script src="https://code.highcharts.com/modules/export-data.js"></script>
+		<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	</head>
 	<body>
 		<div id="text_body">
