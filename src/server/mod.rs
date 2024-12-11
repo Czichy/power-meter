@@ -1,4 +1,5 @@
 // mod api;
+mod gauge;
 mod now;
 mod root;
 
@@ -22,10 +23,16 @@ impl Server {
         // let readonly_database = Arc::new(ReadonlyDatabase::load().unwrap());
 
         // build our application with a single route
-        let app = Router::new().route("/", get(root::get_handler)).route(
-            "/now",
-            get(move || now::handler(latest_reading_cell.0.clone())),
-        );
+        let app = Router::new()
+            .route("/", get(root::get_handler))
+            .route(
+                "/now",
+                get(move || now::handler(latest_reading_cell.0.clone())),
+            )
+            .route(
+                "/gauge",
+                get(move || gauge::handler(latest_reading_cell.1.clone())),
+            );
         // .route(
         //     "/api/now",
         //     get(move || api::now::handler(latest_reading_cell.1.clone())),
