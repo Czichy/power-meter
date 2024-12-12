@@ -288,7 +288,8 @@ pub async fn handler(latest_reading_cell: Arc<AtomicCell<Option<MeterReading>>>)
  
 						success: function(data, status){
 						console.log(data);
-							var response = JSON.parse(data);
+							//var response = JSON.parse(data);
+							var response = data;
 							var point,
 							newVal,
 							inc;
