@@ -33,6 +33,72 @@ pub async fn handler(latest_reading_cell: Arc<AtomicCell<Option<MeterReading>>>)
 		<script src="https://code.highcharts.com/modules/export-data.js"></script>
 		<script src="https://code.highcharts.com/modules/accessibility.js"></script>
 		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<style>
+			.highcharts-figure .chart-container {
+			    width: 300px;
+			    height: 200px;
+			    float: left;
+			}
+
+			.highcharts-figure,
+			.highcharts-data-table table {
+			    width: 600px;
+			    margin: 0 auto;
+			}
+
+			.highcharts-data-table table {
+			    font-family: Verdana, sans-serif;
+			    border-collapse: collapse;
+			    border: 1px solid #ebebeb;
+			    margin: 10px auto;
+			    text-align: center;
+			    width: 100%;
+			    max-width: 500px;
+			}
+
+			.highcharts-data-table caption {
+			    padding: 1em 0;
+			    font-size: 1.2em;
+			    color: #555;
+			}
+
+			.highcharts-data-table th {
+			    font-weight: 600;
+			    padding: 0.5em;
+			}
+
+			.highcharts-data-table td,
+			.highcharts-data-table th,
+			.highcharts-data-table caption {
+			    padding: 0.5em;
+			}
+
+			.highcharts-data-table thead tr,
+			.highcharts-data-table tr:nth-child(even) {
+			    background: #f8f8f8;
+			}
+
+			.highcharts-data-table tr:hover {
+			    background: #f1f7ff;
+			}
+
+			@media (max-width: 600px) {
+			    .highcharts-figure,
+			    .highcharts-data-table table {
+			        width: 100%;
+			    }
+
+			    .highcharts-figure .chart-container {
+			        width: 300px;
+			        float: none;
+			        margin: 0 auto;
+			    }
+			}
+
+			.highcharts-description {
+			    margin: 0.3rem 10px;
+			}
+		</style>
 	</head>
 	<body>
 		<div id="text_body">
@@ -214,33 +280,6 @@ pub async fn handler(latest_reading_cell: Arc<AtomicCell<Option<MeterReading>>>)
 					}]
 				}));
  
-				// WP_Pges gauge
-				var chartWP_Pges = Highcharts.chart('container-WP_Pges', Highcharts.merge(gaugeOptions, {
-					pane: { size: '150%' },
- 
-					yAxis: {
-						min: 0,
-						max: 2000,
-						title: {
-							y: -80,			
-							style: {
-								font: 'bold 16px Dosis, sans-serif',
-								color: '#000000',
-							},		
-							text: 'Gesamtwirkleistung - Ausgehend'
-						}
-					},
-					series: [{
-						name: 'WP_Pges',
-						data: [0],
-						dataLabels: {
-							format: '<div style="text-align:center"><span style="font-size:30px;color:' +
-								((Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black') + '">{point.y:,.1f}<\/span><br>' +
-								   '<span style="font-size:22px;color:silver">W<\/span><\/div>'
-						},
-					}]
-				}));
- 
 				// JSON abholen
 				setInterval(function () {
 					$.ajax({
@@ -248,6 +287,7 @@ pub async fn handler(latest_reading_cell: Arc<AtomicCell<Option<MeterReading>>>)
 						url: "http://10.15.40.17:3000/now",
  
 						success: function(data, status){
+						console.log(data);
 							var response = JSON.parse(data);
 							var point,
 							newVal,
