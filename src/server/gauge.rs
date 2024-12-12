@@ -97,21 +97,23 @@ pub async fn handler(latest_reading_cell: Arc<AtomicCell<Option<MeterReading>>>)
 
 			.highcharts-description {
 			    margin: 0.3rem 10px;
-			}
+			}		
+			.segfontbk {display: inline; font-size:40px}
+			.komma {display: inline; font-size:40px}
 		</style>
 	</head>
 	<body>
 		<div id="text_body">
 			<div style="width: 790px; height: 470px; margin: 0 auto; background-color: #CCCCCC">
-				<div style="width: 489px; background-color: #FFFFFF; float: left">
+				<div style="width: 100%; background-color: #FFFFFF; float: left">
 					<div style="height: 40px">
 						<center><h1>allgemeiner Bedarf</h1></center>
 					</div>
 					<div id="container-AB_Pges" style="height: 200px"></div>
 					<div style="height: 175px">
-						<div id="container-AB_PL1" style="width: 163px; height: 175px; float: left"></div>
-						<div id="container-AB_PL2" style="width: 163px; height: 175px; float: left"></div>
-						<div id="container-AB_PL3" style="width: 163px; height: 175px; float: left"></div>
+						<div id="container-AB_PL1" style="width: 33%; height: 175px; float: left"></div>
+						<div id="container-AB_PL2" style="width: 33%; height: 175px; float: left"></div>
+						<div id="container-AB_PL3" style="width: 33%; height: 175px; float: left"></div>
 					</div>
 					<div id="container-AB_Wges" style="height: 30px; padding: 10px">
 						<script type="text/javascript">
@@ -287,8 +289,6 @@ pub async fn handler(latest_reading_cell: Arc<AtomicCell<Option<MeterReading>>>)
 						url: "http://10.15.40.17:3000/now",
  
 						success: function(data, status){
-						console.log(data);
-							//var response = JSON.parse(data);
 							var response = data;
 							var point,
 							newVal,
@@ -318,7 +318,7 @@ pub async fn handler(latest_reading_cell: Arc<AtomicCell<Option<MeterReading>>>)
 								point.update(newVal);
 							}
 
-							AB_Wges = (response.total_energy_inbound).toFixed(4);
+							AB_Wges = (response.total_energy_inbound/1000).toFixed(4);
 							str_AB_Wges = ('<center><div class="segfontbk">' + AB_Wges.split(".")[0] + '<\/div><div class="komma">,<\/div><div class="segfontbk">' + AB_Wges.split(".")[1] + '<\/div>kWh<\/center>');
 							document.getElementById("container-AB_Wges").innerHTML = str_AB_Wges;
 
