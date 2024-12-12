@@ -322,7 +322,7 @@ pub async fn handler(latest_reading_cell: Arc<AtomicCell<Option<MeterReading>>>)
 							str_AB_Wges = ('<center><div class="segfontbk">' + AB_Wges.split(".")[0] + '<\/div><div class="komma">,<\/div><div class="segfontbk">' + AB_Wges.split(".")[1] + '<\/div>kWh<\/center>');
 							document.getElementById("container-AB_Wges").innerHTML = str_AB_Wges;
 
-							AB_WgesOut = (response.total_energy_outbound).toFixed(4);
+							AB_WgesOut = (response.total_energy_outbound/1000).toFixed(4);
 							str_AB_WgesOut = ('<center><div class="segfontbk">' + AB_WgesOut.split(".")[0] + '<\/div><div class="komma">,<\/div><div class="segfontbk">' + AB_WgesOut.split(".")[1] + '<\/div>kWh<\/center>');
 							document.getElementById("container-AB_WgesOut").innerHTML = str_AB_WgesOut;
 						}
