@@ -54,19 +54,11 @@ pub async fn handler(latest_reading_cell: Arc<AtomicCell<Option<MeterReading>>>)
 							document.write(str_AB_Wges);
 						</script>
 					</div>
-				</div>
- 
-				<div style="width: 296px; background-color: #FFFFFF; float: right">
-					<div style="height: 40px">
-						<center><h1>WÃ¤rmepumpe</h1></center>
-					</div>
-					<div id="container-WP_Pges" style="height: 200px"></div>
-					<div style="height: 175px;"></div>
-					<div id="container-WP_Wges" style="height: 30px; padding: 10px">
+					<div id="container-AB_WgesOut" style="height: 30px; padding: 10px">
 						<script type="text/javascript">
-							WP_Wges = ((0).toFixed(4));
-							var str_WP_Wges = ('<center><div class="segfontbk">' + WP_Wges.split(".")[0] + '<\/div><div class="komma">,<\/div><div class="segfontbk">' + WP_Wges.split(".")[1] + '<\/div>kWh<\/center>');
-							document.write(str_WP_Wges);
+							AB_WgesOut = ((0).toFixed(4));
+							var str_AB_WgesOut = ('<center><div class="segfontbk">' + AB_WgesOut.split(".")[0] + '<\/div><div class="komma">,<\/div><div class="segfontbk">' + AB_WgesOut.split(".")[1] + '<\/div>kWh<\/center>');
+							document.write(str_AB_WgesOut);
 						</script>
 					</div>
 				</div>
@@ -235,7 +227,7 @@ pub async fn handler(latest_reading_cell: Arc<AtomicCell<Option<MeterReading>>>)
 								font: 'bold 16px Dosis, sans-serif',
 								color: '#000000',
 							},		
-							text: 'Gesamtwirkleistung'
+							text: 'Gesamtwirkleistung - Ausgehend'
 						}
 					},
 					series: [{
@@ -263,52 +255,35 @@ pub async fn handler(latest_reading_cell: Arc<AtomicCell<Option<MeterReading>>>)
  
 							if (chartAB_Pges) {
 								point = chartAB_Pges.series[0].points[0];		
-								newVal = response.AB_Pges;
+								newVal = response.current_net_power;
 								point.update(newVal);
 							}
  
 							if (chartAB_PL1) {
 								point = chartAB_PL1.series[0].points[0];
-								newVal = response.AB_PL1;
+								newVal = response.line_one;
 								point.update(newVal);
 							}
  
 							if (chartAB_PL2) {
 								point = chartAB_PL2.series[0].points[0];
-								newVal = response.AB_PL2;
+								newVal = response.line_two;
 								point.update(newVal);
 							}
  
 							if (chartAB_PL3) {
 								point = chartAB_PL3.series[0].points[0];
-								newVal = response.AB_PL3;
+								newVal = response.line_three;
 								point.update(newVal);
 							}
- 
-							AB_Wges = (response.AB_Wges).toFixed(4);
+
+							AB_Wges = (response.total_energy_inbound).toFixed(4);
 							str_AB_Wges = ('<center><div class="segfontbk">' + AB_Wges.split(".")[0] + '<\/div><div class="komma">,<\/div><div class="segfontbk">' + AB_Wges.split(".")[1] + '<\/div>kWh<\/center>');
 							document.getElementById("container-AB_Wges").innerHTML = str_AB_Wges;
-						}
-					});
-					$.ajax({
-						type: "GET",
-						url: "http://10.15.40.17:3000/now",
- 
-						success: function(data, status){
-							var response = JSON.parse(data);
-							var point,
-							newVal,
-							inc;
- 
-							if (chartWP_Pges) {
-								point = chartWP_Pges.series[0].points[0];		
-								newVal = response.WP_Pges;
-								point.update(newVal);
-							}
- 
-							WP_Wges = (response.WP_Wges).toFixed(4);
-							str_WP_Wges = ('<center><div class="segfontbk">' + WP_Wges.split(".")[0] + '<\/div><div class="komma">,<\/div><div class="segfontbk">' + WP_Wges.split(".")[1] + '<\/div>kWh<\/center>');
-							document.getElementById("container-WP_Wges").innerHTML = str_WP_Wges;
+
+							AB_WgesOut = (response.total_energy_outbound).toFixed(4);
+							str_AB_WgesOut = ('<center><div class="segfontbk">' + AB_WgesOut.split(".")[0] + '<\/div><div class="komma">,<\/div><div class="segfontbk">' + AB_WgesOut.split(".")[1] + '<\/div>kWh<\/center>');
+							document.getElementById("container-AB_WgesOut").innerHTML = str_AB_WgesOut;
 						}
 					});
 				}, 2000);						
