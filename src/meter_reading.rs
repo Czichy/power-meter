@@ -20,13 +20,13 @@ pub struct MeterReading {
     pub current_net_power:      Option<f64>,
     pub current_net_power_unit: Option<Unit>,
 
-    pub line_one:      Option<i16>, // watts
+    pub line_one:      Option<f64>, // watts
     pub line_one_unit: Option<Unit>,
 
-    pub line_two:      Option<i8>, // watts
+    pub line_two:      Option<f64>, // watts
     pub line_two_unit: Option<Unit>,
 
-    pub line_three:      Option<i16>, // watts
+    pub line_three:      Option<f64>, // watts
     pub line_three_unit: Option<Unit>,
 }
 
@@ -82,10 +82,19 @@ impl MeterReading {
 
             match obis_code {
                 OBIS_TOTAL_INBOUND_COUNT => {
-                    let Value::U32(value) = entry.value else {
-                        // discard non-64bit integer values
-                        println!("Non 32bit integer: {:?}", entry.value);
-                        continue;
+                    let value = match entry.value {
+                        Value::I8(value) => value as f64,
+                        Value::I16(value) => value as f64,
+                        Value::I32(value) => value as f64,
+                        Value::I64(value) => value as f64,
+                        Value::U8(value) => value as f64,
+                        Value::U16(value) => value as f64,
+                        Value::U32(value) => value as f64,
+                        Value::U64(value) => value as f64,
+                        _ => {
+                            println!("Non 32bit integer: {:?}", entry.value);
+                            continue;
+                        },
                     };
 
                     let value = if let Some(scaler) = entry.scaler {
@@ -104,10 +113,19 @@ impl MeterReading {
                     }
                 },
                 OBIS_TOTAL_OUTBOUND_COUNT => {
-                    let Value::U32(value) = entry.value else {
-                        // discard non-64bit integer values
-                        println!("Non 32bit integer: {:?}", entry.value);
-                        continue;
+                    let value = match entry.value {
+                        Value::I8(value) => value as f64,
+                        Value::I16(value) => value as f64,
+                        Value::I32(value) => value as f64,
+                        Value::I64(value) => value as f64,
+                        Value::U8(value) => value as f64,
+                        Value::U16(value) => value as f64,
+                        Value::U32(value) => value as f64,
+                        Value::U64(value) => value as f64,
+                        _ => {
+                            println!("Non 32bit integer: {:?}", entry.value);
+                            continue;
+                        },
                     };
 
                     let value = if let Some(scaler) = entry.scaler {
@@ -126,10 +144,20 @@ impl MeterReading {
                     }
                 },
                 OBIS_CURRENT_NET_POWER => {
-                    let Value::I16(value) = entry.value else {
-                        // discard non-64bit integer values
-                        println!("Non 16bit integer: {:?}", entry.value);
-                        continue;
+                    let value = match entry.value {
+                        Value::I8(value) => value as f64,
+                        Value::I16(value) => value as f64,
+                        Value::I32(value) => value as f64,
+                        Value::I64(value) => value as f64,
+                        Value::U8(value) => value as f64,
+                        Value::U16(value) => value as f64,
+                        Value::U32(value) => value as f64,
+                        Value::U64(value) => value as f64,
+                        _ => {
+                            // discard non-64bit integer values
+                            println!("Non 16bit integer: {:?}", entry.value);
+                            continue;
+                        },
                     };
 
                     let value = if let Some(scaler) = entry.scaler {
@@ -142,27 +170,57 @@ impl MeterReading {
                     meter_values.current_net_power_unit = unit;
                 },
                 OBIS_LINE_ONE => {
-                    let Value::I16(value) = entry.value else {
-                        println!("Non 16bit integer: {:?}", entry.value);
-                        continue;
+                    let value = match entry.value {
+                        Value::I8(value) => value as f64,
+                        Value::I16(value) => value as f64,
+                        Value::I32(value) => value as f64,
+                        Value::I64(value) => value as f64,
+                        Value::U8(value) => value as f64,
+                        Value::U16(value) => value as f64,
+                        Value::U32(value) => value as f64,
+                        Value::U64(value) => value as f64,
+                        _ => {
+                            println!("Non 32bit integer: {:?}", entry.value);
+                            continue;
+                        },
                     };
 
                     meter_values.line_one = Some(value);
                     meter_values.line_one_unit = unit;
                 },
                 OBIS_LINE_TWO => {
-                    let Value::I8(value) = entry.value else {
-                        println!("Non 8bit integer: {:?}", entry.value);
-                        continue;
+                    let value = match entry.value {
+                        Value::I8(value) => value as f64,
+                        Value::I16(value) => value as f64,
+                        Value::I32(value) => value as f64,
+                        Value::I64(value) => value as f64,
+                        Value::U8(value) => value as f64,
+                        Value::U16(value) => value as f64,
+                        Value::U32(value) => value as f64,
+                        Value::U64(value) => value as f64,
+                        _ => {
+                            println!("Non 32bit integer: {:?}", entry.value);
+                            continue;
+                        },
                     };
 
                     meter_values.line_two = Some(value);
                     meter_values.line_two_unit = unit;
                 },
                 OBIS_LINE_THREE => {
-                    let Value::I16(value) = entry.value else {
-                        println!("Non 16bit integer: {:?}", entry.value);
-                        continue;
+                    let value = match entry.value {
+                        Value::I8(value) => value as f64,
+                        Value::I16(value) => value as f64,
+                        Value::I32(value) => value as f64,
+                        Value::I64(value) => value as f64,
+                        Value::U8(value) => value as f64,
+                        Value::U16(value) => value as f64,
+                        Value::U32(value) => value as f64,
+                        Value::U64(value) => value as f64,
+                        _ => {
+                            println!("Non 32bit integer: {:?}", entry.value);
+                            continue;
+                        },
                     };
 
                     meter_values.line_three = Some(value);
