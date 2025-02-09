@@ -286,7 +286,7 @@ pub async fn handler(latest_reading_cell: Arc<AtomicCell<Option<MeterReading>>>)
 				setInterval(function () {
 					$.ajax({
 						type: "GET",
-						url: "http://127.0.0.1:3000/now",
+						url: "http://10.15.40.34:3000/now",
  
 						success: function(data, status){
 							var response = data;
