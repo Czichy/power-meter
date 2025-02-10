@@ -76,7 +76,7 @@ impl CoreLoop {
                             &reading.total_energy_inbound,
                             &reading.total_energy_inbound_unit,
                         ) {
-                            if let Ok(sent) = self.mqtt_client.publish(
+                            let Ok(sent) = self.mqtt_client.publish(
                                 format!("{MQTT_TOPIC_PREFIX}/meter_time"),
                                 rumqttc::QoS::AtLeastOnce,
                                 false,
