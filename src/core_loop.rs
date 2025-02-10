@@ -15,22 +15,16 @@ pub struct CoreLoop {
     port:           String,
     // database:       &'a Database,
     latest_reading: Arc<AtomicCell<Option<MeterReading>>>,
-    mqtt_client:    rumqttc::Client,
     verbose:        bool,
 }
 
 impl CoreLoop {
     pub fn new(port: String, verbose: bool) -> Self {
         // Set MQTT connection options
-        let mut mqttoptions =
-            rumqttc::MqttOptions::new(MQTT_CLIENT_NAME, MQTT_BROKER_ADDRESS, MQTT_BROKER_PORT);
-        mqttoptions.set_keep_alive(Duration::from_secs(10));
-        let (mqtt_client, mut _connection) = rumqttc::Client::new(mqttoptions, 10);
         Self {
             port,
             // database,
             latest_reading: Arc::new(AtomicCell::new(None)),
-            mqtt_client,
             verbose,
         }
     }
@@ -43,6 +37,10 @@ impl CoreLoop {
             .open()
             .expect("Failed to open port");
 
+        let mut mqttoptions =
+            rumqttc::MqttOptions::new(MQTT_CLIENT_NAME, MQTT_BROKER_ADDRESS, MQTT_BROKER_PORT);
+        mqttoptions.set_keep_alive(Duration::from_secs(10));
+        let (mqtt_client, mut _connection) = rumqttc::Client::new(mqttoptions, 10);
         // let mut current_ball_position = 1;
         let mut decoder = sml_rs::transport::Decoder::<Vec<u8>>::new();
 
@@ -76,7 +74,7 @@ impl CoreLoop {
                             &reading.total_energy_inbound,
                             &reading.total_energy_inbound_unit,
                         ) {
-                            match self.mqtt_client.publish(
+                            match mqtt_client.publish(
                                 format!("{MQTT_TOPIC_PREFIX}/meter_time"),
                                 rumqttc::QoS::AtLeastOnce,
                                 false,
@@ -98,7 +96,7 @@ impl CoreLoop {
                             &reading.total_energy_outbound,
                             &reading.total_energy_outbound_unit,
                         ) {
-                            match self.mqtt_client.publish(
+                            match mqtt_client.publish(
                                 format!("{MQTT_TOPIC_PREFIX}/meter_time"),
                                 rumqttc::QoS::AtLeastOnce,
                                 false,
@@ -119,7 +117,7 @@ impl CoreLoop {
                         if let (Some(current_net_power), Some(current_net_power_unit)) =
                             (&reading.current_net_power, &reading.current_net_power_unit)
                         {
-                            match self.mqtt_client.publish(
+                            match mqtt_client.publish(
                                 format!("{MQTT_TOPIC_PREFIX}/meter_time"),
                                 rumqttc::QoS::AtLeastOnce,
                                 false,
@@ -140,7 +138,7 @@ impl CoreLoop {
                         if let (Some(line_one), Some(line_one_unit)) =
                             (&reading.line_one, &reading.line_one_unit)
                         {
-                            match self.mqtt_client.publish(
+                            match mqtt_client.publish(
                                 format!("{MQTT_TOPIC_PREFIX}/meter_time"),
                                 rumqttc::QoS::AtLeastOnce,
                                 false,
@@ -159,7 +157,7 @@ impl CoreLoop {
                         if let (Some(line_two), Some(line_two_unit)) =
                             (&reading.line_two, &reading.line_two_unit)
                         {
-                            match self.mqtt_client.publish(
+                            match mqtt_client.publish(
                                 format!("{MQTT_TOPIC_PREFIX}/meter_time"),
                                 rumqttc::QoS::AtLeastOnce,
                                 false,
@@ -178,7 +176,7 @@ impl CoreLoop {
                         if let (Some(line_three), Some(line_three_unit)) =
                             (&reading.line_three, &reading.line_three_unit)
                         {
-                            match self.mqtt_client.publish(
+                            match mqtt_client.publish(
                                 format!("{MQTT_TOPIC_PREFIX}/meter_time"),
                                 rumqttc::QoS::AtLeastOnce,
                                 false,
