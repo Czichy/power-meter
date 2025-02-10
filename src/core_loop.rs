@@ -87,7 +87,7 @@ impl CoreLoop {
                                 ),
                             ) else {
                                 println!("Cannot send MQTT message!");
-                                continue;
+                                // continue;
                             };
                         }
 
@@ -108,7 +108,7 @@ impl CoreLoop {
                                 Ok(_) => {},
                                 Err(err) => {
                                     println!("Cannot send to MQTT {err}");
-                                    continue;
+                                    // continue;
                                 },
                             };
                         }
@@ -126,7 +126,7 @@ impl CoreLoop {
                                      }}",
                                 ),
                             ) else {
-                                continue;
+                                // continue;
                             };
                         }
 
@@ -142,7 +142,7 @@ impl CoreLoop {
                                      \"unit\" : \"{line_one_unit}\" }}",
                                 ),
                             ) else {
-                                continue;
+                                // continue;
                             };
                         }
                         if let (Some(line_two), Some(line_two_unit)) =
@@ -157,7 +157,7 @@ impl CoreLoop {
                                      \"unit\" : \"{line_two_unit}\" }}",
                                 ),
                             ) else {
-                                continue;
+                                // continue;
                             };
                         }
                         if let (Some(line_three), Some(line_three_unit)) =
@@ -172,7 +172,7 @@ impl CoreLoop {
                                      \"unit\" : \"{line_three_unit}\" }}",
                                 ),
                             ) else {
-                                continue;
+                                // continue;
                             };
                         }
                     }
