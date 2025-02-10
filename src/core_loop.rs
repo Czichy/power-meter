@@ -95,7 +95,7 @@ impl CoreLoop {
                             &reading.total_energy_outbound,
                             &reading.total_energy_outbound_unit,
                         ) {
-                            let Ok(sent) = self.mqtt_client.publish(
+                            match self.mqtt_client.publish(
                                 format!("{MQTT_TOPIC_PREFIX}/meter_time"),
                                 rumqttc::QoS::AtLeastOnce,
                                 false,
@@ -104,8 +104,12 @@ impl CoreLoop {
                                      {total_energy_outbound}, \"unit\" : \
                                      \"{total_energy_outbound_unit}\" }}",
                                 ),
-                            ) else {
-                                continue;
+                            ) {
+                                Ok(_) => {},
+                                Err(err) => {
+                                    println!("Cannot send to MQTT {err}");
+                                    continue;
+                                },
                             };
                         }
 
