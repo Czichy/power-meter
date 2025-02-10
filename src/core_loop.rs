@@ -6,9 +6,6 @@ use serialport::{Parity, StopBits};
 
 use crate::meter_reading::MeterReading;
 
-const MQTT_CLIENT_NAME: &str = "HL-3-RZ-POWER-01";
-const MQTT_BROKER_ADDRESS: &str = "10.15.40.33";
-const MQTT_BROKER_PORT: u16 = 1883;
 const MQTT_TOPIC_PREFIX: &str = "power-meter/1-HLY03-0207-2343/";
 
 pub struct CoreLoop {
@@ -20,7 +17,6 @@ pub struct CoreLoop {
 
 impl CoreLoop {
     pub fn new(port: String, verbose: bool) -> Self {
-        // Set MQTT connection options
         Self {
             port,
             // database,
@@ -29,7 +25,7 @@ impl CoreLoop {
         }
     }
 
-    pub fn enter(&self) -> Result<(), Error> {
+    pub fn enter(&self, mqtt_client: rumqttc::Client) -> Result<(), Error> {
         let port = serialport::new(&self.port, 9_600)
             .stop_bits(StopBits::One)
             .parity(Parity::None)
@@ -37,10 +33,6 @@ impl CoreLoop {
             .open()
             .expect("Failed to open port");
 
-        let mut mqttoptions =
-            rumqttc::MqttOptions::new(MQTT_CLIENT_NAME, MQTT_BROKER_ADDRESS, MQTT_BROKER_PORT);
-        mqttoptions.set_keep_alive(Duration::from_secs(10));
-        let (mqtt_client, mut _connection) = rumqttc::Client::new(mqttoptions, 10);
         // let mut current_ball_position = 1;
         let mut decoder = sml_rs::transport::Decoder::<Vec<u8>>::new();
 
