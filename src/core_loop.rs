@@ -111,7 +111,7 @@ impl CoreLoop {
                         {
                             match mqtt_client.publish(
                                 format!("{MQTT_TOPIC_PREFIX}/meter_time"),
-                                rumqttc::QoS::AtLeastOnce,
+                                rumqttc::QoS::AtMostOnce,
                                 false,
                                 format!(
                                     "{{ \"timestamp\": {meter_time}, \"value\": \
@@ -132,7 +132,7 @@ impl CoreLoop {
                         {
                             match mqtt_client.publish(
                                 format!("{MQTT_TOPIC_PREFIX}/meter_time"),
-                                rumqttc::QoS::AtLeastOnce,
+                                rumqttc::QoS::AtMostOnce,
                                 false,
                                 format!(
                                     "{{ \"timestamp\": {meter_time}, \"value\": {line_one}, \
@@ -151,7 +151,7 @@ impl CoreLoop {
                         {
                             match mqtt_client.publish(
                                 format!("{MQTT_TOPIC_PREFIX}/meter_time"),
-                                rumqttc::QoS::AtLeastOnce,
+                                rumqttc::QoS::AtMostOnce,
                                 false,
                                 format!(
                                     "{{ \"timestamp\": {meter_time}, \"value\": {line_two}, \
@@ -170,7 +170,7 @@ impl CoreLoop {
                         {
                             match mqtt_client.publish(
                                 format!("{MQTT_TOPIC_PREFIX}/meter_time"),
-                                rumqttc::QoS::AtLeastOnce,
+                                rumqttc::QoS::AtMostOnce,
                                 false,
                                 format!(
                                     "{{ \"timestamp\": {meter_time}, \"value\": {line_three}, \
