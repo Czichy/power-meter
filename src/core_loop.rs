@@ -76,7 +76,7 @@ impl CoreLoop {
                             &reading.total_energy_inbound,
                             &reading.total_energy_inbound_unit,
                         ) {
-                            let Ok(sent) = self.mqtt_client.publish(
+                            match self.mqtt_client.publish(
                                 format!("{MQTT_TOPIC_PREFIX}/meter_time"),
                                 rumqttc::QoS::AtLeastOnce,
                                 false,
@@ -85,9 +85,12 @@ impl CoreLoop {
                                      {total_energy_inbound}, \"unit\" : \
                                      \"{total_energy_inbound_unit}\" }}",
                                 ),
-                            ) else {
-                                println!("Cannot send MQTT message!");
-                                // continue;
+                            ) {
+                                Ok(_) => {},
+                                Err(err) => {
+                                    println!("Cannot send to MQTT {err}");
+                                    // continue;
+                                },
                             };
                         }
 
@@ -116,7 +119,7 @@ impl CoreLoop {
                         if let (Some(current_net_power), Some(current_net_power_unit)) =
                             (&reading.current_net_power, &reading.current_net_power_unit)
                         {
-                            let Ok(sent) = self.mqtt_client.publish(
+                            match self.mqtt_client.publish(
                                 format!("{MQTT_TOPIC_PREFIX}/meter_time"),
                                 rumqttc::QoS::AtLeastOnce,
                                 false,
@@ -125,15 +128,19 @@ impl CoreLoop {
                                      {current_net_power}, \"unit\" : \"{current_net_power_unit}\" \
                                      }}",
                                 ),
-                            ) else {
-                                // continue;
+                            ) {
+                                Ok(_) => {},
+                                Err(err) => {
+                                    println!("Cannot send to MQTT {err}");
+                                    // continue;
+                                },
                             };
                         }
 
                         if let (Some(line_one), Some(line_one_unit)) =
                             (&reading.line_one, &reading.line_one_unit)
                         {
-                            let Ok(sent) = self.mqtt_client.publish(
+                            match self.mqtt_client.publish(
                                 format!("{MQTT_TOPIC_PREFIX}/meter_time"),
                                 rumqttc::QoS::AtLeastOnce,
                                 false,
@@ -141,14 +148,18 @@ impl CoreLoop {
                                     "{{ \"timestamp\": {meter_time}, \"value\": {line_one}, \
                                      \"unit\" : \"{line_one_unit}\" }}",
                                 ),
-                            ) else {
-                                // continue;
+                            ) {
+                                Ok(_) => {},
+                                Err(err) => {
+                                    println!("Cannot send to MQTT {err}");
+                                    // continue;
+                                },
                             };
                         }
                         if let (Some(line_two), Some(line_two_unit)) =
                             (&reading.line_two, &reading.line_two_unit)
                         {
-                            let Ok(sent) = self.mqtt_client.publish(
+                            match self.mqtt_client.publish(
                                 format!("{MQTT_TOPIC_PREFIX}/meter_time"),
                                 rumqttc::QoS::AtLeastOnce,
                                 false,
@@ -156,14 +167,18 @@ impl CoreLoop {
                                     "{{ \"timestamp\": {meter_time}, \"value\": {line_two}, \
                                      \"unit\" : \"{line_two_unit}\" }}",
                                 ),
-                            ) else {
-                                // continue;
+                            ) {
+                                Ok(_) => {},
+                                Err(err) => {
+                                    println!("Cannot send to MQTT {err}");
+                                    // continue;
+                                },
                             };
                         }
                         if let (Some(line_three), Some(line_three_unit)) =
                             (&reading.line_three, &reading.line_three_unit)
                         {
-                            let Ok(sent) = self.mqtt_client.publish(
+                            match self.mqtt_client.publish(
                                 format!("{MQTT_TOPIC_PREFIX}/meter_time"),
                                 rumqttc::QoS::AtLeastOnce,
                                 false,
@@ -171,8 +186,12 @@ impl CoreLoop {
                                     "{{ \"timestamp\": {meter_time}, \"value\": {line_three}, \
                                      \"unit\" : \"{line_three_unit}\" }}",
                                 ),
-                            ) else {
-                                // continue;
+                            ) {
+                                Ok(_) => {},
+                                Err(err) => {
+                                    println!("Cannot send to MQTT {err}");
+                                    // continue;
+                                },
                             };
                         }
                     }
