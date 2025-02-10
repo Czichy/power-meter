@@ -25,7 +25,7 @@ impl CoreLoop {
         let mut mqttoptions =
             rumqttc::MqttOptions::new(MQTT_CLIENT_NAME, MQTT_BROKER_ADDRESS, MQTT_BROKER_PORT);
         mqttoptions.set_keep_alive(Duration::from_secs(10));
-        let (mqtt_client, mut connection) = rumqttc::Client::new(mqttoptions, 10);
+        let (mqtt_client, mut _connection) = rumqttc::Client::new(mqttoptions, 10);
         Self {
             port,
             // database,
@@ -76,7 +76,7 @@ impl CoreLoop {
                             &reading.total_energy_inbound,
                             &reading.total_energy_inbound_unit,
                         ) {
-                            let Ok(sent) = self.mqtt_client.publish(
+                            if let Ok(sent) = self.mqtt_client.publish(
                                 format!("{MQTT_TOPIC_PREFIX}/meter_time"),
                                 rumqttc::QoS::AtLeastOnce,
                                 false,
@@ -86,6 +86,7 @@ impl CoreLoop {
                                      \"{total_energy_inbound_unit}\" }}",
                                 ),
                             ) else {
+                                println!("Cannot send MQTT message!");
                                 continue;
                             };
                         }
