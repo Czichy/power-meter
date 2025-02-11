@@ -285,12 +285,12 @@ pub async fn publish_data(
         ) {
             mqtt_client
                 .publish(
-                    format!("{MQTT_TOPIC_PREFIX}/total_inbound"),
+                    MQTT_TOPIC_PREFIX.to_string(),
                     rumqttc::QoS::AtLeastOnce,
                     false,
                     format!(
-                        "{{ \"timestamp\": {meter_time}, \"value\": {total_energy_inbound}, \
-                         \"unit\" : \"{total_energy_inbound_unit}\" }}",
+                        "{{ \"timestamp\": {meter_time}, \"total_inbound\": \
+                         {total_energy_inbound}, \"unit\" : \"{total_energy_inbound_unit}\" }}",
                     ),
                 )
                 .await
@@ -303,12 +303,12 @@ pub async fn publish_data(
         ) {
             mqtt_client
                 .publish(
-                    format!("{MQTT_TOPIC_PREFIX}/total_outbound"),
+                    MQTT_TOPIC_PREFIX.to_string(),
                     rumqttc::QoS::AtLeastOnce,
                     false,
                     format!(
-                        "{{ \"timestamp\": {meter_time},\"value\": {total_energy_outbound}, \
-                         \"unit\" : \"{total_energy_outbound_unit}\"
+                        "{{ \"timestamp\": {meter_time},\"total_outbound\": \
+                         {total_energy_outbound}, \"unit\" : \"{total_energy_outbound_unit}\"
          }}",
                     ),
                 )
@@ -321,12 +321,12 @@ pub async fn publish_data(
         {
             mqtt_client
                 .publish(
-                    format!("{MQTT_TOPIC_PREFIX}/current_net_power"),
+                    MQTT_TOPIC_PREFIX.to_string(),
                     rumqttc::QoS::AtMostOnce,
                     false,
                     format!(
-                        "{{ \"timestamp\": {meter_time}, \"value\":  {current_net_power}, \
-                         \"unit\" : \"{current_net_power_unit}\" }}",
+                        "{{ \"timestamp\": {meter_time}, \"current_net_power\":  \
+                         {current_net_power}, \"unit\" : \"{current_net_power_unit}\" }}",
                     ),
                 )
                 .await
@@ -336,11 +336,11 @@ pub async fn publish_data(
         if let (Some(line_one), Some(line_one_unit)) = (&reading.line_one, &reading.line_one_unit) {
             mqtt_client
                 .publish(
-                    format!("{MQTT_TOPIC_PREFIX}/line_one"),
+                    MQTT_TOPIC_PREFIX.to_string(),
                     rumqttc::QoS::AtMostOnce,
                     false,
                     format!(
-                        "{{ \"timestamp\": {meter_time}, \"value\": {line_one}, \"unit\" : \
+                        "{{ \"timestamp\": {meter_time}, \"line_one\": {line_one}, \"unit\" : \
                          \"{line_one_unit}\" }}",
                     ),
                 )
@@ -350,11 +350,11 @@ pub async fn publish_data(
         if let (Some(line_two), Some(line_two_unit)) = (&reading.line_two, &reading.line_two_unit) {
             mqtt_client
                 .publish(
-                    format!("{MQTT_TOPIC_PREFIX}/line_two"),
+                    MQTT_TOPIC_PREFIX.to_string(),
                     rumqttc::QoS::AtMostOnce,
                     false,
                     format!(
-                        "{{ \"timestamp\": {meter_time}, \"value\": {line_two}, \"unit\" : \
+                        "{{ \"timestamp\": {meter_time}, \"line_two\": {line_two}, \"unit\" : \
                          \"{line_two_unit}\" }}",
                     ),
                 )
@@ -366,11 +366,11 @@ pub async fn publish_data(
         {
             mqtt_client
                 .publish(
-                    format!("{MQTT_TOPIC_PREFIX}/line_three"),
+                    MQTT_TOPIC_PREFIX.to_string(),
                     rumqttc::QoS::AtMostOnce,
                     false,
                     format!(
-                        "{{ \"timestamp\": {meter_time}, \"value\": {line_three}, \"unit\" : \
+                        "{{ \"timestamp\": {meter_time}, \"line_three\": {line_three}, \"unit\" : \
                          \"{line_three_unit}\"
          }}",
                     ),
