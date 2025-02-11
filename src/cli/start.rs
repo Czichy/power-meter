@@ -60,22 +60,26 @@ impl StartCommand {
         // sched.start().await?;
         handles.push(tokio::task::spawn(async move {
             loop {
+                println!("core loop start");
                 let client = client.clone();
                 let core = core_loop.clone();
                 if let Err(e) = core.get_data_and_publish(&client).await {
                     error!("Failed SML API job: {:?}", e);
                 }
+                println!("core loop end");
             }
         }));
 
         handles.push(tokio::task::spawn(async move {
             loop {
+                println!("event loop start");
                 if let Err(e) = eventloop.poll().await {
                     // In case of an error stop event loop and terminate task
                     // this will result in aborting the program
                     error!("Error MQTT Event loop returned: {:?}", e);
                     break;
                 }
+                println!("event loop end");
             }
         }));
 
