@@ -1,3 +1,4 @@
+use clap::Command;
 use clap_derive::{Parser, Subcommand};
 
 // use crate::cli::database::DatabaseCommand;
@@ -20,11 +21,11 @@ pub enum Commands {
 }
 
 impl RootCommand {
-    pub fn run(self) -> Result<(), anyhow::Error> {
+    pub async fn run(self) -> Result<(), anyhow::Error> {
         match self.command {
             // Commands::Database(command) => command.run(),
-            Commands::ListPorts(command) => command.run(),
-            Commands::Start(command) => command.run(),
+            Commands::ListPorts(command) => Ok(()), // command.run().await,
+            Commands::Start(command) => command.run().await,
         }
     }
 }

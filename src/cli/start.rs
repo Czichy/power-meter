@@ -1,11 +1,9 @@
-use std::thread;
-
 use anyhow::Error;
 use clap_derive::Args;
+use log::{error, info};
+use tokio_cron_scheduler::Job;
 
 use crate::core_loop::CoreLoop;
-// use crate::database::Database;
-use crate::server::Server;
 
 const MQTT_CLIENT_NAME: &str = "HL-3-RZ-POWER-01";
 const MQTT_BROKER_ADDRESS: &str = "10.15.40.33";
@@ -21,21 +19,79 @@ pub struct StartCommand {
 }
 
 impl StartCommand {
-    pub fn run(self) -> Result<(), Error> {
-        // let database = Database::load()?;
+    // pub fn _run(self) -> Result<(), Error> {
+    //     let core_loop = CoreLoop::new(self.port, self.verbose);
+    //     let latest_reading_cell = core_loop.get_latest_reading_cell();
+
+    //     let server_thread = thread::spawn(|| Server::create(3000,
+    // latest_reading_cell).enter());
+
+    //     core_loop.enter()?;
+
+    //     server_thread.join().unwrap()?;
+    //     Ok(())
+    // }
+
+    pub async fn run(self) -> Result<(), Error> {
+        let core_loop = CoreLoop::new(self.port, self.verbose);
+        let sched = tokio_cron_scheduler::JobScheduler::new().await?;
+        let mut handles = Vec::new();
+
         let mut mqttoptions =
             rumqttc::MqttOptions::new(MQTT_CLIENT_NAME, MQTT_BROKER_ADDRESS, MQTT_BROKER_PORT);
         mqttoptions.set_keep_alive(std::time::Duration::from_secs(10));
-        let (mqtt_client, mut _connection) = rumqttc::Client::new(mqttoptions, 10);
 
-        let core_loop = CoreLoop::new(self.port, self.verbose);
-        let latest_reading_cell = core_loop.get_latest_reading_cell();
+        let (client, mut eventloop) = rumqttc::AsyncClient::new(mqttoptions, 5);
 
-        let server_thread = thread::spawn(|| Server::create(3000, latest_reading_cell).enter());
+        // This job runs every 10 seconds and retrieves the current power consumption
+        // from the power metet
+        let mut sml_job = Job::new_async("1/10 * * * * *", move |_, _| {
+            let client = client.clone();
+            let core = core_loop.clone();
+            Box::pin(async move {
+                if let Err(e) = core.get_data_and_publish(&client).await {
+                    error!("Failed Tibber API job: {:?}", e);
+                }
+            })
+        })?;
 
-        core_loop.enter(mqtt_client)?;
+        sml_job
+            .on_stop_notification_add(
+                &sched,
+                Box::new(|job_id, notification_id, type_of_notification| {
+                    Box::pin(async move {
+                        info!(
+                            "Job {:?} was completed, notification {:?} ran ({:?})",
+                            job_id, notification_id, type_of_notification
+                        );
+                    })
+                }),
+            )
+            .await?;
 
-        server_thread.join().unwrap()?;
+        sched.add(sml_job).await?;
+        // sched.add(tibber_job).await?;
+        sched.start().await?;
+
+        handles.push(tokio::task::spawn(async move {
+            loop {
+                if let Err(e) = eventloop.poll().await {
+                    // In case of an error stop event loop and terminate task
+                    // this will result in aborting the program
+                    error!("Error MQTT Event loop returned: {:?}", e);
+                    break;
+                }
+            }
+        }));
+
+        // In case any of the tasks panic abort the program
+        for handle in handles {
+            if let Err(e) = handle.await {
+                error!("Task panicked: {:?}", e);
+                std::process::exit(1);
+            }
+        }
+
         Ok(())
     }
 }
