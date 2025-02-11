@@ -32,32 +32,41 @@ impl StartCommand {
 
         // This job runs every 10 seconds and retrieves the current power consumption
         // from the power metet
-        let mut sml_job = Job::new_async("1/10 * * * * *", move |_, _| {
-            let client = client.clone();
-            let core = core_loop.clone();
-            Box::pin(async move {
+        // let mut sml_job = Job::new_async("1/10 * * * * *", move |_, _| {
+        //     let client = client.clone();
+        //     let core = core_loop.clone();
+        //     Box::pin(async move {
+        //         if let Err(e) = core.get_data_and_publish(&client).await {
+        //             error!("Failed SML API job: {:?}", e);
+        //         }
+        //     })
+        // })?;
+
+        // sml_job
+        //     .on_stop_notification_add(
+        //         &sched,
+        //         Box::new(|job_id, notification_id, type_of_notification| {
+        //             Box::pin(async move {
+        //                 info!(
+        //                     "Job {:?} was completed, notification {:?} ran ({:?})",
+        //                     job_id, notification_id, type_of_notification
+        //                 );
+        //             })
+        //         }),
+        //     )
+        //     .await?;
+
+        // sched.add(sml_job).await?;
+        // sched.start().await?;
+        handles.push(tokio::task::spawn(async move {
+            loop {
+                let client = client.clone();
+                let core = core_loop.clone();
                 if let Err(e) = core.get_data_and_publish(&client).await {
                     error!("Failed SML API job: {:?}", e);
                 }
-            })
-        })?;
-
-        sml_job
-            .on_stop_notification_add(
-                &sched,
-                Box::new(|job_id, notification_id, type_of_notification| {
-                    Box::pin(async move {
-                        info!(
-                            "Job {:?} was completed, notification {:?} ran ({:?})",
-                            job_id, notification_id, type_of_notification
-                        );
-                    })
-                }),
-            )
-            .await?;
-
-        sched.add(sml_job).await?;
-        sched.start().await?;
+            }
+        }));
 
         handles.push(tokio::task::spawn(async move {
             loop {
