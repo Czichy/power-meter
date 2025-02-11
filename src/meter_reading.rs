@@ -4,6 +4,9 @@ use anyhow::{anyhow, bail, Error};
 use serde::Serialize;
 use sml_rs::parser::{common::{Time, Value},
                      complete::{File, MessageBody}};
+use tokio::{io::{AsyncRead, AsyncReadExt},
+            sync::mpsc::{self, Sender}};
+use tokio_stream::{wrappers::ReceiverStream, Stream};
 
 use crate::{obis_code::ObisCode, unit::Unit};
 
@@ -302,4 +305,81 @@ impl Display for MeterReading {
             map_unknown(&self.line_three_unit)
         )
     }
+}
+
+/// Read SML message stream from a reader
+///
+/// ```
+/// use std::io::Cursor;
+/// use hackdose_sml_parser::message_stream::sml_message_stream;
+/// use tokio_stream::StreamExt;
+///
+/// #[tokio::main]
+/// async fn main() {
+///     let cursor = Cursor::new(vec![0x01, 0x02, 0x03]);
+///     let mut message_stream = sml_message_stream(cursor);
+///     while let Some(message) = message_stream.next().await {
+///         println!("Message: {:?}", message);
+///     }
+/// }
+/// ```
+pub fn sml_message_stream(
+    mut stream: impl AsyncRead + Unpin + Send + 'static,
+) -> impl Stream<Item = MeterReading> {
+    let (tx, rx) = mpsc::channel::<MeterReading>(256);
+
+    let mut buf = [0; 512];
+    let mut decoder = sml_rs::transport::Decoder::<Vec<u8>>::new();
+
+    tokio::spawn(async move {
+        while let Ok(n) = stream.read(&mut buf).await {
+            if n == 0 {
+                break;
+            }
+            emit_message(&mut decoder, &buf[..n], tx.clone()).await;
+        }
+    });
+
+    ReceiverStream::new(rx)
+}
+
+async fn emit_message<'a>(
+    decoder: &'a mut sml_rs::transport::Decoder<Vec<u8>>,
+    buf: &'a [u8],
+    tx: Sender<MeterReading>,
+) -> Result<(), Error> {
+    let mut to_process = buf.to_vec();
+    for byte in to_process {
+        match decoder.push_byte(byte) {
+            Ok(None) => {},
+            Ok(Some(decoded_bytes)) => {
+                let result = sml_rs::parser::complete::parse(decoded_bytes);
+                let Ok(sml_file) = result else {
+                    // if self.verbose {
+                    println!("Err({:?})", result);
+                    // }
+                    continue;
+                };
+
+                let reading = MeterReading::parse(sml_file);
+                let Ok(reading) = reading else {
+                    continue;
+                };
+                // if self.verbose {
+                println!("{}", reading.display_compact());
+                // }
+                let _ = tx.send(reading).await;
+
+                // let _ = publish_data(&reading, mqtt_client).await;
+
+                // self.latest_reading.store(Some(reading));
+            },
+            Err(e) => {
+                // if self.verbose {
+                println!("Err({:?})", e);
+                // }
+            },
+        }
+    }
+    Ok(())
 }
