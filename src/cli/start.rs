@@ -19,19 +19,6 @@ pub struct StartCommand {
 }
 
 impl StartCommand {
-    // pub fn _run(self) -> Result<(), Error> {
-    //     let core_loop = CoreLoop::new(self.port, self.verbose);
-    //     let latest_reading_cell = core_loop.get_latest_reading_cell();
-
-    //     let server_thread = thread::spawn(|| Server::create(3000,
-    // latest_reading_cell).enter());
-
-    //     core_loop.enter()?;
-
-    //     server_thread.join().unwrap()?;
-    //     Ok(())
-    // }
-
     pub async fn run(self) -> Result<(), Error> {
         let core_loop = CoreLoop::new(self.port, self.verbose);
         let sched = tokio_cron_scheduler::JobScheduler::new().await?;
@@ -70,7 +57,6 @@ impl StartCommand {
             .await?;
 
         sched.add(sml_job).await?;
-        // sched.add(tibber_job).await?;
         sched.start().await?;
 
         handles.push(tokio::task::spawn(async move {

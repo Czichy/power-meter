@@ -285,7 +285,7 @@ pub async fn publish_data(
         ) {
             mqtt_client
                 .publish(
-                    format!("{MQTT_TOPIC_PREFIX}/meter_time"),
+                    format!("{MQTT_TOPIC_PREFIX}/total_inbound"),
                     rumqttc::QoS::AtLeastOnce,
                     false,
                     format!(
@@ -303,7 +303,7 @@ pub async fn publish_data(
         ) {
             mqtt_client
                 .publish(
-                    format!("{MQTT_TOPIC_PREFIX}/meter_time"),
+                    format!("{MQTT_TOPIC_PREFIX}/total_outbound"),
                     rumqttc::QoS::AtLeastOnce,
                     false,
                     format!(
@@ -321,7 +321,7 @@ pub async fn publish_data(
         {
             mqtt_client
                 .publish(
-                    format!("{MQTT_TOPIC_PREFIX}/meter_time"),
+                    format!("{MQTT_TOPIC_PREFIX}/current_net_power"),
                     rumqttc::QoS::AtMostOnce,
                     false,
                     format!(
@@ -336,7 +336,7 @@ pub async fn publish_data(
         if let (Some(line_one), Some(line_one_unit)) = (&reading.line_one, &reading.line_one_unit) {
             mqtt_client
                 .publish(
-                    format!("{MQTT_TOPIC_PREFIX}/meter_time"),
+                    format!("{MQTT_TOPIC_PREFIX}/line_one"),
                     rumqttc::QoS::AtMostOnce,
                     false,
                     format!(
@@ -350,7 +350,7 @@ pub async fn publish_data(
         if let (Some(line_two), Some(line_two_unit)) = (&reading.line_two, &reading.line_two_unit) {
             mqtt_client
                 .publish(
-                    format!("{MQTT_TOPIC_PREFIX}/meter_time"),
+                    format!("{MQTT_TOPIC_PREFIX}/line_two"),
                     rumqttc::QoS::AtMostOnce,
                     false,
                     format!(
@@ -366,7 +366,7 @@ pub async fn publish_data(
         {
             mqtt_client
                 .publish(
-                    format!("{MQTT_TOPIC_PREFIX}/meter_time"),
+                    format!("{MQTT_TOPIC_PREFIX}/line_three"),
                     rumqttc::QoS::AtMostOnce,
                     false,
                     format!(
