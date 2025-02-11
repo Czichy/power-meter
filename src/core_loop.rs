@@ -60,7 +60,6 @@ impl CoreLoop {
                     if self.verbose {
                         println!("{}", reading.display_compact());
                     }
-
                     // self.database.insert_reading(&reading)?;
                     if let Some(meter_time) = reading.meter_time {
                         if let (Some(total_energy_inbound), Some(total_energy_inbound_unit)) = (
@@ -276,6 +275,9 @@ pub async fn publish_data(
     reading: &MeterReading,
     mqtt_client: &rumqttc::AsyncClient,
 ) -> Result<(), Error> {
+    let _ = mqtt_client
+        .publish("hello/rumqtt", rumqttc::QoS::AtLeastOnce, false, "alive")
+        .await;
     if let Some(meter_time) = reading.meter_time {
         if let (Some(total_energy_inbound), Some(total_energy_inbound_unit)) = (
             &reading.total_energy_inbound,
