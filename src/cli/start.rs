@@ -37,7 +37,7 @@ impl StartCommand {
             let core = core_loop.clone();
             Box::pin(async move {
                 if let Err(e) = core.get_data_and_publish(&client).await {
-                    error!("Failed Tibber API job: {:?}", e);
+                    error!("Failed SML API job: {:?}", e);
                 }
             })
         })?;
