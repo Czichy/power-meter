@@ -1,4 +1,5 @@
 use anyhow::{Context, Error};
+use chrono::Utc;
 use clap_derive::Args;
 use tokio::io::AsyncRead;
 use tokio_serial::SerialStream;
@@ -30,16 +31,6 @@ impl StartCommand {
         mqttoptions.set_keep_alive(std::time::Duration::from_secs(10));
 
         let (client, mut eventloop) = rumqttc::AsyncClient::new(mqttoptions, 5);
-        // let mut mqttoptions = MqttOptions::new(
-        //     "rumqtt-async",
-        //     config.mqtt_broker.host,
-        //     config.mqtt_broker.port,
-        // );
-        // mqttoptions.set_credentials(config.mqtt_broker.username,
-        // config.mqtt_broker.password); mqttoptions.
-        // set_keep_alive(Duration::from_secs(5));
-
-        // let (client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
 
         tokio::spawn(async move {
             loop {
@@ -49,78 +40,6 @@ impl StartCommand {
         while let Some(event) = stream.next().await {
             let _ = publish_data(&event, &client).await;
         }
-
-        // let core_loop = CoreLoop::new(self.port, self.verbose);
-        // let sched = tokio_cron_scheduler::JobScheduler::new().await?;
-        // let mut handles = Vec::new();
-
-        // let mut mqttoptions =
-        //     rumqttc::MqttOptions::new(MQTT_CLIENT_NAME, MQTT_BROKER_ADDRESS,
-        // MQTT_BROKER_PORT); mqttoptions.
-        // set_keep_alive(std::time::Duration::from_secs(10));
-
-        // let (client, mut eventloop) = rumqttc::AsyncClient::new(mqttoptions, 5);
-
-        // This job runs every 10 seconds and retrieves the current power consumption
-        // from the power metet
-        // let mut sml_job = Job::new_async("1/10 * * * * *", move |_, _| {
-        //     let client = client.clone();
-        //     let core = core_loop.clone();
-        //     Box::pin(async move {
-        //         if let Err(e) = core.get_data_and_publish(&client).await {
-        //             error!("Failed SML API job: {:?}", e);
-        //         }
-        //     })
-        // })?;
-
-        // sml_job
-        //     .on_stop_notification_add(
-        //         &sched,
-        //         Box::new(|job_id, notification_id, type_of_notification| {
-        //             Box::pin(async move {
-        //                 info!(
-        //                     "Job {:?} was completed, notification {:?} ran ({:?})",
-        //                     job_id, notification_id, type_of_notification
-        //                 );
-        //             })
-        //         }),
-        //     )
-        //     .await?;
-
-        // sched.add(sml_job).await?;
-        // sched.start().await?;
-        // handles.push(tokio::task::spawn(async move {
-        //     loop {
-        //         println!("core loop start");
-        //         let client = client.clone();
-        //         let core = core_loop.clone();
-        //         if let Err(e) = core.get_data_and_publish(&client).await {
-        //             error!("Failed SML API job: {:?}", e);
-        //         }
-        //         println!("core loop end");
-        //     }
-        // }));
-
-        // handles.push(tokio::task::spawn(async move {
-        //     loop {
-        //         println!("event loop start");
-        //         if let Err(e) = eventloop.poll().await {
-        //             // In case of an error stop event loop and terminate task
-        //             // this will result in aborting the program
-        //             error!("Error MQTT Event loop returned: {:?}", e);
-        //             break;
-        //         }
-        //         println!("event loop end");
-        //     }
-        // }));
-
-        // // In case any of the tasks panic abort the program
-        // for handle in handles {
-        //     if let Err(e) = handle.await {
-        //         error!("Task panicked: {:?}", e);
-        //         std::process::exit(1);
-        //     }
-        // }
 
         Ok(())
     }
@@ -134,6 +53,9 @@ pub async fn publish_data(
     reading: &MeterReading,
     mqtt_client: &rumqttc::AsyncClient,
 ) -> Result<(), Error> {
+    let meter_install_date: chrono::DateTime<Utc> =
+        chrono::DateTime::from_timestamp(1728985109, 0).expect("invalid timestamp");
+
     let _ = mqtt_client
         .publish(
             "power-meter",
@@ -143,17 +65,8 @@ pub async fn publish_data(
         )
         .await;
     if let Some(meter_time) = reading.meter_time {
-        let _ = mqtt_client
-            .publish(
-                "power-meter",
-                rumqttc::QoS::AtLeastOnce,
-                false,
-                format!(
-                    "{}",
-                    (chrono::Utc::now() - chrono::Duration::seconds(meter_time as i64)).timestamp()
-                ),
-            )
-            .await;
+        let meter_time =
+            (meter_install_date + chrono::Duration::seconds(meter_time as i64)).timestamp();
         if let (Some(total_energy_inbound), Some(total_energy_inbound_unit)) = (
             &reading.total_energy_inbound,
             &reading.total_energy_inbound_unit,
