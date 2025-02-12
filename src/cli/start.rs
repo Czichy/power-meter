@@ -143,6 +143,17 @@ pub async fn publish_data(
         )
         .await;
     if let Some(meter_time) = reading.meter_time {
+        let _ = mqtt_client
+            .publish(
+                "power-meter",
+                rumqttc::QoS::AtLeastOnce,
+                false,
+                format!(
+                    "{}",
+                    (chrono::Utc::now() - chrono::Duration::seconds(meter_time as i64)).timestamp()
+                ),
+            )
+            .await;
         if let (Some(total_energy_inbound), Some(total_energy_inbound_unit)) = (
             &reading.total_energy_inbound,
             &reading.total_energy_inbound_unit,
