@@ -53,8 +53,9 @@ pub async fn publish_data(
     reading: &MeterReading,
     mqtt_client: &rumqttc::AsyncClient,
 ) -> Result<(), Error> {
-    let meter_install_date: chrono::DateTime<Utc> =
-        chrono::DateTime::from_timestamp(1728985109, 0).expect("invalid timestamp");
+    // let meter_install_date: chrono::DateTime<Utc> =
+    //     chrono::DateTime::from_timestamp(1728985109, 0).expect("invalid
+    // timestamp");
 
     let _ = mqtt_client
         .publish(
@@ -65,8 +66,14 @@ pub async fn publish_data(
         )
         .await;
     if let Some(meter_time) = reading.meter_time {
-        let meter_time =
-            (meter_install_date + chrono::Duration::seconds(meter_time as i64)).timestamp();
+        // let meter_time =
+        //     (meter_install_date + chrono::Duration::seconds(meter_time as
+        // i64)).timestamp();
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("SystemTime before UNIX EPOCH!")
+            .as_secs();
         if let (Some(total_energy_inbound), Some(total_energy_inbound_unit)) = (
             &reading.total_energy_inbound,
             &reading.total_energy_inbound_unit,
@@ -77,8 +84,9 @@ pub async fn publish_data(
                     rumqttc::QoS::AtLeastOnce,
                     false,
                     format!(
-                        "{{ \"timestamp\": {meter_time}, \"total_inbound\": \
-                         {total_energy_inbound}, \"unit\" : \"{total_energy_inbound_unit}\" }}",
+                        "{{ \"timestamp\": {timestamp},\"meter_time\": {meter_time}, \
+                         \"total_inbound\": {total_energy_inbound}, \"unit\" : \
+                         \"{total_energy_inbound_unit}\" }}",
                     ),
                 )
                 .await
