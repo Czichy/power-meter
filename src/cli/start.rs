@@ -103,9 +103,9 @@ pub async fn publish_data(
                     rumqttc::QoS::AtLeastOnce,
                     false,
                     format!(
-                        "{{ \"timestamp\": {meter_time},\"total_outbound\": \
-                         {total_energy_outbound}, \"unit\" : \"{total_energy_outbound_unit}\"
-         }}",
+                        "{{ \"timestamp\": {timestamp},\"meter_time\": {meter_time}, \
+                         \"total_outbound\": {total_energy_outbound}, \"unit\" : \
+                         \"{total_energy_outbound_unit}\" }}",
                     ),
                 )
                 .await
@@ -121,8 +121,9 @@ pub async fn publish_data(
                     rumqttc::QoS::AtMostOnce,
                     false,
                     format!(
-                        "{{ \"timestamp\": {meter_time}, \"current_net_power\":  \
-                         {current_net_power}, \"unit\" : \"{current_net_power_unit}\" }}",
+                        "{{ \"timestamp\": {timestamp},\"meter_time\": {meter_time}, \
+                         \"current_net_power\": {current_net_power}, \"unit\" : \
+                         \"{current_net_power_unit}\" }}",
                     ),
                 )
                 .await
@@ -136,8 +137,8 @@ pub async fn publish_data(
                     rumqttc::QoS::AtMostOnce,
                     false,
                     format!(
-                        "{{ \"timestamp\": {meter_time}, \"line_one\": {line_one}, \"unit\" : \
-                         \"{line_one_unit}\" }}",
+                        "{{ \"timestamp\": {timestamp},\"meter_time\": {meter_time}, \
+                         \"line_one\": {line_one}, \"unit\" : \"{line_one_unit}\" }}",
                     ),
                 )
                 .await
@@ -150,8 +151,8 @@ pub async fn publish_data(
                     rumqttc::QoS::AtMostOnce,
                     false,
                     format!(
-                        "{{ \"timestamp\": {meter_time}, \"line_two\": {line_two}, \"unit\" : \
-                         \"{line_two_unit}\" }}",
+                        "{{ \"timestamp\": {timestamp},\"meter_time\": {meter_time}, \
+                         \"line_two\": {line_two}, \"unit\" : \"{line_two_unit}\" }}",
                     ),
                 )
                 .await
@@ -166,8 +167,8 @@ pub async fn publish_data(
                     rumqttc::QoS::AtMostOnce,
                     false,
                     format!(
-                        "{{ \"timestamp\": {meter_time}, \"line_three\": {line_three}, \"unit\" : \
-                         \"{line_three_unit}\"
+                        "{{ \"timestamp\": {timestamp},\"meter_time\": {meter_time}, \
+                         \"line_three\": {line_three}, \"unit\" : \"{line_three_unit}\"
          }}",
                     ),
                 )
