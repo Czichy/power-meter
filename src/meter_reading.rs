@@ -55,8 +55,13 @@ impl MeterReading {
             bail!("Unexpected message type: {:?}", list_response.message_body);
         };
 
+        let meter_time = match &get_list_response.act_sensor_time {
+            Some(Time::SecIndex(secs)) => Some(*secs),
+            _ => None,
+        };
+
         let mut meter_values = MeterReading {
-            meter_time:                 None,
+            meter_time,
             total_energy_inbound:       None,
             total_energy_inbound_unit:  None,
             total_energy_outbound:      None,
@@ -108,12 +113,6 @@ impl MeterReading {
 
                     meter_values.total_energy_inbound = Some(value);
                     meter_values.total_energy_inbound_unit = unit;
-
-                    if let Some(Time::SecIndex(secs)) = entry.val_time {
-                        meter_values.meter_time = Some(secs);
-                    } else {
-                        meter_values.meter_time = None;
-                    }
                 },
                 OBIS_TOTAL_OUTBOUND_COUNT => {
                     let value = match entry.value {
@@ -139,12 +138,6 @@ impl MeterReading {
 
                     meter_values.total_energy_outbound = Some(value);
                     meter_values.total_energy_outbound_unit = unit;
-
-                    if let Some(Time::SecIndex(secs)) = entry.val_time {
-                        meter_values.meter_time = Some(secs);
-                    } else {
-                        meter_values.meter_time = None;
-                    }
                 },
                 OBIS_CURRENT_NET_POWER => {
                     let value = match entry.value {
