@@ -1,5 +1,4 @@
 use anyhow::{Context, Error};
-use chrono::Utc;
 use clap_derive::Args;
 use tokio::io::AsyncRead;
 use tokio_serial::SerialStream;
@@ -29,14 +28,33 @@ impl StartCommand {
         let mut mqttoptions =
             rumqttc::MqttOptions::new(MQTT_CLIENT_NAME, MQTT_BROKER_ADDRESS, MQTT_BROKER_PORT);
         mqttoptions.set_keep_alive(std::time::Duration::from_secs(10));
+        // Last Will: broker marks us offline if the connection drops, so evcc
+        // sees a stale meter instead of a silently frozen last value.
+        mqttoptions.set_last_will(rumqttc::LastWill::new(
+            format!("{MQTT_TOPIC_PREFIX}/status"),
+            "offline",
+            rumqttc::QoS::AtLeastOnce,
+            true,
+        ));
 
-        let (client, mut eventloop) = rumqttc::AsyncClient::new(mqttoptions, 5);
+        let (client, mut eventloop) = rumqttc::AsyncClient::new(mqttoptions, 10);
 
         tokio::spawn(async move {
             loop {
                 let _ = eventloop.poll().await;
             }
         });
+
+        // Announce availability (retained) once connected.
+        let _ = client
+            .publish(
+                format!("{MQTT_TOPIC_PREFIX}/status"),
+                rumqttc::QoS::AtLeastOnce,
+                true,
+                "online",
+            )
+            .await;
+
         while let Some(event) = stream.next().await {
             let _ = publish_data(&event, &client).await;
         }
@@ -49,132 +67,51 @@ pub(crate) fn uart_ir_sensor_data_stream(port: String) -> impl AsyncRead {
     let serial = tokio_serial::new(port, 9600);
     SerialStream::open(&serial).unwrap()
 }
+
+/// Publish every reading as **one raw numeric value per subtopic**, retained.
+///
+/// This is the layout evcc's `mqtt` plugin consumes directly (one topic = one
+/// value, no JSON/jq), e.g. the grid meter reads `<prefix>/power`:
+///   - `<prefix>/power`         momentary net power in W (+ import / − export, OBIS 16.7.0)
+///   - `<prefix>/energy_import` total drawn from grid in Wh (OBIS 1.8.0)
+///   - `<prefix>/energy_export` total fed into grid in Wh   (OBIS 2.8.0)
+///   - `<prefix>/l1` `/l2` `/l3` per-phase power in W
+///
+/// Retained so a reconnecting subscriber (evcc, Grafana) gets the last value
+/// immediately instead of waiting for the next SML telegram.
 pub async fn publish_data(
     reading: &MeterReading,
     mqtt_client: &rumqttc::AsyncClient,
 ) -> Result<(), Error> {
-    // let meter_install_date: chrono::DateTime<Utc> =
-    //     chrono::DateTime::from_timestamp(1728985109, 0).expect("invalid
-    // timestamp");
+    async fn publish_field(
+        client: &rumqttc::AsyncClient,
+        topic: String,
+        value: f64,
+    ) -> Result<(), Error> {
+        client
+            .publish(topic, rumqttc::QoS::AtLeastOnce, true, format!("{value}"))
+            .await
+            .context("Failed to publish meter value")?;
+        Ok(())
+    }
 
-    let _ = mqtt_client
-        .publish(
-            "power-meter",
-            rumqttc::QoS::AtLeastOnce,
-            false,
-            "1-HLY03-0207-2343 alive",
-        )
-        .await;
-    if let Some(meter_time) = reading.meter_time {
-        // let meter_time =
-        //     (meter_install_date + chrono::Duration::seconds(meter_time as
-        // i64)).timestamp();
-        use std::time::{SystemTime, UNIX_EPOCH};
-        let timestamp = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("SystemTime before UNIX EPOCH!")
-            .as_secs();
-        if let (Some(total_energy_inbound), Some(total_energy_inbound_unit)) = (
-            &reading.total_energy_inbound,
-            &reading.total_energy_inbound_unit,
-        ) {
-            mqtt_client
-                .publish(
-                    MQTT_TOPIC_PREFIX.to_string(),
-                    rumqttc::QoS::AtLeastOnce,
-                    false,
-                    format!(
-                        "{{ \"timestamp\": {timestamp},\"meter_time\": {meter_time}, \
-                         \"total_inbound\": {total_energy_inbound}, \"unit\" : \
-                         \"{total_energy_inbound_unit}\" }}",
-                    ),
-                )
-                .await
-                .context("Failed to publish current consumption message")?;
-        }
-
-        if let (Some(total_energy_outbound), Some(total_energy_outbound_unit)) = (
-            &reading.total_energy_outbound,
-            &reading.total_energy_outbound_unit,
-        ) {
-            mqtt_client
-                .publish(
-                    MQTT_TOPIC_PREFIX.to_string(),
-                    rumqttc::QoS::AtLeastOnce,
-                    false,
-                    format!(
-                        "{{ \"timestamp\": {timestamp},\"meter_time\": {meter_time}, \
-                         \"total_outbound\": {total_energy_outbound}, \"unit\" : \
-                         \"{total_energy_outbound_unit}\" }}",
-                    ),
-                )
-                .await
-                .context("Failed to publish current consumption message")?;
-        }
-
-        if let (Some(current_net_power), Some(current_net_power_unit)) =
-            (&reading.current_net_power, &reading.current_net_power_unit)
-        {
-            mqtt_client
-                .publish(
-                    MQTT_TOPIC_PREFIX.to_string(),
-                    rumqttc::QoS::AtMostOnce,
-                    false,
-                    format!(
-                        "{{ \"timestamp\": {timestamp},\"meter_time\": {meter_time}, \
-                         \"current_net_power\": {current_net_power}, \"unit\" : \
-                         \"{current_net_power_unit}\" }}",
-                    ),
-                )
-                .await
-                .context("Failed to publish current consumption message")?;
-        }
-
-        if let (Some(line_one), Some(line_one_unit)) = (&reading.line_one, &reading.line_one_unit) {
-            mqtt_client
-                .publish(
-                    MQTT_TOPIC_PREFIX.to_string(),
-                    rumqttc::QoS::AtMostOnce,
-                    false,
-                    format!(
-                        "{{ \"timestamp\": {timestamp},\"meter_time\": {meter_time}, \
-                         \"line_one\": {line_one}, \"unit\" : \"{line_one_unit}\" }}",
-                    ),
-                )
-                .await
-                .context("Failed to publish current consumption message")?;
-        }
-        if let (Some(line_two), Some(line_two_unit)) = (&reading.line_two, &reading.line_two_unit) {
-            mqtt_client
-                .publish(
-                    MQTT_TOPIC_PREFIX.to_string(),
-                    rumqttc::QoS::AtMostOnce,
-                    false,
-                    format!(
-                        "{{ \"timestamp\": {timestamp},\"meter_time\": {meter_time}, \
-                         \"line_two\": {line_two}, \"unit\" : \"{line_two_unit}\" }}",
-                    ),
-                )
-                .await
-                .context("Failed to publish current consumption message")?;
-        }
-        if let (Some(line_three), Some(line_three_unit)) =
-            (&reading.line_three, &reading.line_three_unit)
-        {
-            mqtt_client
-                .publish(
-                    MQTT_TOPIC_PREFIX.to_string(),
-                    rumqttc::QoS::AtMostOnce,
-                    false,
-                    format!(
-                        "{{ \"timestamp\": {timestamp},\"meter_time\": {meter_time}, \
-                         \"line_three\": {line_three}, \"unit\" : \"{line_three_unit}\"
-         }}",
-                    ),
-                )
-                .await
-                .context("Failed to publish current consumption message")?;
-        }
+    if let Some(value) = reading.current_net_power {
+        publish_field(mqtt_client, format!("{MQTT_TOPIC_PREFIX}/power"), value).await?;
+    }
+    if let Some(value) = reading.total_energy_inbound {
+        publish_field(mqtt_client, format!("{MQTT_TOPIC_PREFIX}/energy_import"), value).await?;
+    }
+    if let Some(value) = reading.total_energy_outbound {
+        publish_field(mqtt_client, format!("{MQTT_TOPIC_PREFIX}/energy_export"), value).await?;
+    }
+    if let Some(value) = reading.line_one {
+        publish_field(mqtt_client, format!("{MQTT_TOPIC_PREFIX}/l1"), value).await?;
+    }
+    if let Some(value) = reading.line_two {
+        publish_field(mqtt_client, format!("{MQTT_TOPIC_PREFIX}/l2"), value).await?;
+    }
+    if let Some(value) = reading.line_three {
+        publish_field(mqtt_client, format!("{MQTT_TOPIC_PREFIX}/l3"), value).await?;
     }
 
     Ok(())
